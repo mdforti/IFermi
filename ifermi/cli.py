@@ -32,6 +32,7 @@ def fsplot(
     interpolate_factor: int = 8,
     mu: float = 0.0,
     wigner_seitz: bool = True,
+    force_primitive: bool = False,
     spin: Optional[Spin] = None,
     plot_type: str = "plotly",
     interactive: bool = False,
@@ -79,7 +80,7 @@ def fsplot(
 
     interp_bs, kpoint_dim = interpolater.interpolate_bands(interpolate_factor)
     fs = FermiSurface.from_band_structure(
-        interp_bs, kpoint_dim, mu=mu, wigner_seitz=wigner_seitz
+        interp_bs, kpoint_dim, mu=mu, wigner_seitz=wigner_seitz, force_primitive = force_primitive
     )
 
     directory = directory if directory else "."
@@ -160,6 +161,13 @@ def _get_fs_parser():
         help="use the reciprocal lattice rather than Wigner-Seitz cell",
     )
     parser.add_argument(
+        "-fp",
+        "--force-primitive",
+        dest="force_primitive",
+        action="store_false",
+        help="force the primitive cell to be used in finding the Wigner-Seitz cell",
+    )
+    parser.add_argument(
         "--spin",
         type=string_to_spin,
         default=None,
@@ -225,6 +233,7 @@ def main():
         spin=args.spin,
         interactive=args.interactive,
         wigner_seitz=args.wigner_seitz,
+        force_primitive=args.force_primitive,
         slice_info=args.slice,
         prefix=args.prefix,
         directory=args.directory,

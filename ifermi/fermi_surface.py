@@ -84,6 +84,7 @@ class FermiSurface(MSONable):
         kpoint_dim: np.ndarray,
         mu: float = 0.0,
         wigner_seitz: bool = False,
+        force_primitive: bool = False,
         symprec: float = 0.001,
     ) -> "FermiSurface":
         """
@@ -98,6 +99,8 @@ class FermiSurface(MSONable):
                shape of the resulting iso-surface.
             wigner_seitz: Controls whether the cell is the Wigner-Seitz cell
                 or the reciprocal unit cell parallelepiped.
+            force_primitive: Forces the Wigner-Seitz cell to be calculated using the
+            primitive lattice vector.
             symprec: Symmetry precision for determining whether the structure is the
                 standard primitive unit cell.
 
@@ -123,7 +126,18 @@ class FermiSurface(MSONable):
             if not np.allclose(prim.lattice.matrix, structure.lattice.matrix, 1e-5):
                 warnings.warn("Structure does not match expected primitive cell")
 
-            reciprocal_space = WignerSeitzCell.from_structure(structure)
+            if force_primitive:
+                warnings.warn("Using the primitive cell may give incorrect results. \n Check that the output "
+                              "behaves as expected, or rerun the DFT calculation using the primitive cell "
+                              "in the POSCAR file.")
+
+            if force_primitive:
+                reciprocal_space = WignerSeitzCell.from_structure(prim)
+                kpoint_rlat = ReciprocalCell.from_structure(structure).reciprocal_lattice
+            else:
+                reciprocal_space = WignerSeitzCell.from_structure(structure)
+                kpoint_rlat = None
+
             bands, frac_kpoints, kpoint_dim = _expand_bands(
                 bands, frac_kpoints, kpoint_dim
             )
@@ -133,7 +147,7 @@ class FermiSurface(MSONable):
 
         kpoint_dim = tuple(kpoint_dim.astype(int))
         isosurfaces = compute_isosurfaces(
-            bands, kpoint_dim, fermi_level, reciprocal_space,
+            bands, kpoint_dim, fermi_level, reciprocal_space, force_primitive, kpoint_rlat
         )
 
         return cls(isosurfaces, reciprocal_space, structure)
@@ -193,6 +207,8 @@ def compute_isosurfaces(
     kpoint_dim: Tuple[int, int, int],
     fermi_level: float,
     reciprocal_space: ReciprocalCell,
+    force_primitive: bool = False,
+    kpoint_rlat: np.array = None
 ) -> Dict[Spin, List[Tuple[np.ndarray, np.ndarray]]]:
     """
     Compute the isosurfaces at a particular energy level.
@@ -208,7 +224,11 @@ def compute_isosurfaces(
         A dictionary containing a list of isosurfaces as ``(vertices, faces)`` for
         each spin channel.
     """
-    rlat = reciprocal_space.reciprocal_lattice
+    if force_primitive:
+        rlat = kpoint_rlat
+
+    else:
+        rlat = reciprocal_space.reciprocal_lattice
 
     spacing = 1 / (np.array(kpoint_dim) - 1)
 
