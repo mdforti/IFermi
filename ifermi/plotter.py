@@ -69,7 +69,7 @@ _plotly_label_style = dict(
 
 _mayavi_high_sym_label_style = {
     "color": (0, 0, 0),
-    "scale": 0.1,
+    "scale": 0.15,
     "orientation": (90.0, 0.0, 0.0),
 }
 
@@ -295,7 +295,7 @@ class FermiSurfacePlotter(MSONable):
         for c, (verts, faces) in zip(colors, isosurfaces):
             x, y, z = zip(*verts)
             i, j, k = ([triplet[c] for triplet in faces] for c in range(3))
-            trace = go.Mesh3d(x=x, y=y, z=z, color=c, opacity=1, i=i, j=j, k=k)
+            trace = go.Mesh3d(x=x, y=y, z=z, color=c, opacity=0.8, i=i, j=j, k=k)
             meshes.append(trace)
 
         # add the cell outline to the plot
@@ -363,7 +363,8 @@ class FermiSurfacePlotter(MSONable):
 
         for c, (verts, faces) in zip(colors, isosurfaces):
             x, y, z = zip(*verts)
-            mlab.triangular_mesh(x, y, z, faces, color=tuple(c), opacity=0.7)
+            h = mlab.triangular_mesh(x, y, z, faces, color=tuple(c), opacity=0.7)
+            h.scene.renderer.use_depth_peeling = True
 
         # latexify labels
         labels = ["${}$".format(i) for i in self._symmetry_pts[1]]
@@ -371,14 +372,14 @@ class FermiSurfacePlotter(MSONable):
             mlabtex(*coords, label, **_mayavi_high_sym_label_style)
 
         if isinstance(self.reciprocal_space, ReciprocalCell):
-            mlab.view(azimuth=0, elevation=60, distance=8)
+            mlab.view(azimuth=270, elevation=60, distance=8)
         else:
-            mlab.view(azimuth=235, elevation=60, distance=8)
+            mlab.view(azimuth=270, elevation=60, distance=8)
 
         if interactive:
             mlab.show()
         else:
-            mlab.savefig(str(filename), figure=mlab.gcf())
+            mlab.savefig(str(filename), size=(80, 80))
 
 
 class FermiSlicePlotter(object):
@@ -587,13 +588,13 @@ def _get_plotly_colors(
 
     n_objects = sum([len(objects[spin]) for spin in spins])
 
-    if n_objects < len(px.colors.qualitative.Prism):
-        colors = px.colors.qualitative.Prism
+    if n_objects < len(px.colors.qualitative.Dark2):
+        colors = px.colors.qualitative.Dark2
     else:
         colors = []
-        i = n_objects // len(px.colors.qualitative.Prism) + 1
+        i = n_objects // len(px.colors.qualitative.Dark2) + 1
         for count in range(i):
-            colors.append(px.colors.qualitative.Prism)
+            colors.append(px.colors.qualitative.Dark2)
 
     return colors
 

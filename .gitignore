@@ -20,6 +20,7 @@ lib64/
 parts/
 sdist/
 var/
+*.band_structure.py
 *.egg-info/
 .installed.cfg
 *.egg

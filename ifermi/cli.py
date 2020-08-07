@@ -4,8 +4,6 @@
 """
 A script to plot Fermi surfaces
 
-TODO:
- - A lot
 """
 
 import argparse
