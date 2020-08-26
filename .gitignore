@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+# Code in early dev
+ifermi.band_structure.py
+
 # Distribution / packaging
 .Python
 env/
@@ -20,7 +23,6 @@ lib64/
 parts/
 sdist/
 var/
-*.band_structure.py
 *.egg-info/
 .installed.cfg
 *.egg
