@@ -270,8 +270,17 @@ def compute_isosurfaces(
                 band_data = band.reshape(kpoint_dim)
 
                 if smooth:
+                    #MDF_COMMENT trying smooth
                     # smoothing algorithm requires input to have surface at 0.5
-                    smoothed_band_data = mcubes.smooth(band_data - 0.5)
+                    #MDF_COMMENT actually the smooth algorith takes the whole range of 
+                    #MDF_COMMENT values, you give the isosurface later, and the band_data is already 
+                    #MDF_COMMENT translated to the fermi level. 
+                    #MDF_COMMENT in the example at 
+                    #MDF_COMMENT https://github.com/pmneila/PyMCubes/tree/b6ce8cc7a4e86c9b4b1bedea7073f573b6c7b739
+                    # 0.5 is the level of the sphere they want to show, but you can set 
+                    # whatever offset you want. you can also not set an offset and then ask
+                    # for any other isolevel to the marching_cubes routine.
+                    smoothed_band_data = mcubes.smooth(band_data) #-band_data.max() +0.5 )#MDF_COMMENT - 0.5)
                     # and outputs embedding array with values 0 and 1
                     verts, faces = mcubes.marching_cubes(smoothed_band_data, 0)
                     # have to manually set spacing with PyMCubes
